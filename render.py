@@ -52,11 +52,15 @@ def init():
     glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 0, None) # Specifies that the position data in the vertex shader should have three float components vec3f
     glEnableVertexAttribArray(position) # Enable the generic vertex attribute array
  
-
 # Render loop, runs once per frame
 def render():
     global shaderProgram
     global IBO
+    t = glutGet(GLUT_ELAPSED_TIME)
+    if (t % 12 == 0): # Every 12 ms
+        # Send dominating frequency and average amplitude of sound buffer frame to fragment shader
+        
+
 
     glClearColor(0, 0, 0, 1) # Specify the color that the buffer be set to when it clears (black in this case)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # Clear the color and the depth buffer using the clear color
