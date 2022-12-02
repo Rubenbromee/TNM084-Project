@@ -4,6 +4,7 @@ from OpenGL.GL import shaders
 import numpy as np
 import vert
 import frag
+from audio import load, handle
  
 VERTEX_SHADER = vert.VERTEX_SHADER
 FRAGMENT_SHADER = frag.FRAGMENT_SHADER
@@ -11,6 +12,12 @@ FRAGMENT_SHADER = frag.FRAGMENT_SHADER
 shaderProgram = None
 IBO = None
 windowSize = 500
+y = None
+yMax = None
+yMin = None
+f = None
+ampLocation = None
+freqLocation = None
 
 # Intitialization, runs once at the start of the program
 def init():
@@ -47,26 +54,34 @@ def init():
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO) # The intent is to use the buffer object for index attribute data
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies.nbytes, indicies, GL_STATIC_DRAW) # Creates and initializes the index buffer object's data store
 
-
     position = glGetAttribLocation(shaderProgram, 'position') # Queries the (shader?) program for the variable named position
     glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 0, None) # Specifies that the position data in the vertex shader should have three float components vec3f
     glEnableVertexAttribArray(position) # Enable the generic vertex attribute array
+
+    y, yMax, yMin, f = load() # Load amplitude and frequency data from sound file
+    ampLocation = glGetUniformLocation(shaderProgram, 'amp')
+    freqLocation = glGetUniformLocation(shaderProgram, 'freq')
  
 # Render loop, runs once per frame
 def render():
     global shaderProgram
     global IBO
+    global y, yMax, yMin, f, ampLocation, freqLocation
     t = glutGet(GLUT_ELAPSED_TIME)
-    if (t % 12 == 0): # Every 12 ms
-        # Send dominating frequency and average amplitude of sound buffer frame to fragment shader
-        
-
+    print(t)
 
     glClearColor(0, 0, 0, 1) # Specify the color that the buffer be set to when it clears (black in this case)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # Clear the color and the depth buffer using the clear color
  
     glUseProgram(shaderProgram) # Use the compiled shader program in the rendering
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, IBO, 3 * np.uint32(0).nbytes)
+
+    # Send dominating frequency and average amplitude of sound buffer frame to fragment shader
+    if (t % 12 == 0): # Every 12 ms
+        a, df = handle(y, yMax, yMin, f, t)
+        glUniform1f(ampLocation, a)
+        glUniform1f(freqLocation, df)
+        glutPostRedisplay()
    
     glUseProgram(0)
     glutSwapBuffers()

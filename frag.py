@@ -1,6 +1,8 @@
 FRAGMENT_SHADER = """
 #version 330
     in vec2 outPosition;
+	uniform float amp;
+	uniform float freq;
 
 	vec2 random2(vec2 st)
 	{
@@ -79,6 +81,7 @@ FRAGMENT_SHADER = """
         // From (0,0) in bottom left corner and (1, 1) in top right corner
         // Does it matter for procedural textures as long as they're normalized (0,1)?
         vec2 tex = (outPosition + vec2(1.0, 1.0)) / 2;
-        gl_FragColor = vec4(customNoise(tex, 100), customNoise(tex, 150), customNoise(tex, 200), 1.0f);
+        // gl_FragColor = vec4(customNoise(tex, 100), customNoise(tex, 150), customNoise(tex, 200), 1.0f);
+		gl_FragColor = vec4(amp, freq, 0.0f, 1.0f);
     }
 """
