@@ -80,8 +80,12 @@ FRAGMENT_SHADER = """
         // Define normalized coordinates (not really texture coordinates) 
         // From (0,0) in bottom left corner and (1, 1) in top right corner
         // Does it matter for procedural textures as long as they're normalized (0,1)?
-        vec2 tex = (outPosition + vec2(1.0, 1.0)) / 2;
-        // gl_FragColor = vec4(customNoise(tex, 100), customNoise(tex, 150), customNoise(tex, 200), 1.0f);
-		gl_FragColor = vec4(amp, freq, 0.0f, 1.0f);
+        vec2 tex = (outPosition + vec2(1.0, 1.0)) / 2; // Texture coords
+
+		// Noises
+        // gl_FragColor = vec4(customNoise(tex, 100), customNoise(tex, 150), customNoise(tex, 200), 1.0f); // Pure noise
+		// gl_FragColor = vec4(customNoise(tex * amp, 100), customNoise(tex * amp, 110), customNoise(tex * amp, 120), 1.0f); // Pure noise weighted with amplitude
+		// gl_FragColor = vec4(customNoise(tex * freq, 100), customNoise(tex * freq, 110), customNoise(tex * freq, 120), 1.0f); // Pure noise weighted with frequency
+		gl_FragColor = vec4(sin(tex.x * tex.y * freq * amp * 100), sin(tex.x * tex.y * freq * amp * 120), sin(tex.x * tex.y * freq * amp * 140), 1.0f);
     }
 """

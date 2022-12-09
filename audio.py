@@ -1,5 +1,7 @@
 import librosa as lib
 import numpy as np
+from pygame import mixer
+import time
 
 def load():
 	y, sr = lib.load('song.wav')
@@ -7,7 +9,17 @@ def load():
 	f = lib.amplitude_to_db(np.abs(lib.stft(y, hop_length=256, win_length=2048))) # Equal hop length and window length to get an even division of the buffer
 	yMax = max(y)
 	yMin = min(y)
-	return y, yMax, yMin, f
+
+	y_ms = round(y.shape[0] / sr) * 1000 # Song length in ms
+	a_list = []
+	df_list = []
+
+	for t in range(0,  y_ms, 12):
+		a, df = handle(y, yMax, yMin, f, t) # Get normalized frequency and dominating frequency
+		a_list.append(a)
+		df_list.append(df)
+
+	return a_list, df_list
 
 # Calculate and return the average amplitude and the dominating frequency of the sample window
 def handle(y, yMax, yMin, f, t):
@@ -33,7 +45,7 @@ def handle(y, yMax, yMin, f, t):
 		currentFrame[frequencyBandNr] = 0
 	
 	avgDominatingFrequency = sum(dominatingFrequencies) / len(dominatingFrequencies)
-	gamma = 3 # Larger gamma = more contrast 
+	gamma = 4 # Larger gamma = more contrast 
 	normalizedDominatingFrequency = (np.log(avgDominatingFrequency) / np.log(maxSampledFrequency)) # To get normalized value
 	normalizedDominatingFrequency = normalizedDominatingFrequency ** (1 / gamma)  # Gamma correction to increase difference in frequencies
 
@@ -42,12 +54,13 @@ def handle(y, yMax, yMin, f, t):
 	averageAmplitude = sum(currentAmplitudeWindow) / sampleLength
 	normalizedAverageAmplitude = (averageAmplitude - yMin) / (yMax - yMin) # Scale to (0, 1)
 	return normalizedAverageAmplitude, normalizedDominatingFrequency
-	
 
-
-y, yMax, yMin, f = load()
-a, df = handle(y, yMax, yMin, f, 20000)
-print("Amplitude:", a, "Dominating frequency:", df)
+# To play audio file, uses pygames mixer
+def play(song):
+	mixer.init()
+	mixer.music.load(song)
+	mixer.music.set_volume(0.5)
+	mixer.music.play()
 
 
 
