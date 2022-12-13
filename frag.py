@@ -76,6 +76,24 @@ FRAGMENT_SHADER = """
 		return c;
 	}
 
+	// "Speaker" visualization
+	vec4 radial(vec2 tex, float freq, float amp) {
+		float distCenter = sqrt(pow((0.5 - tex.x), 2) + pow((0.5 - tex.y), 2)); // Euclidian distance from center
+		return vec4(0.0, 0.0, sin(distCenter * freq * amp * 125), 1.0);
+	}
+
+	// "Speaker" visualization with noise mixed in
+	vec4 radialNoise(vec2 tex, float freq, float amp) {
+		float distCenter = sqrt(pow((0.5 - tex.x), 2) + pow((0.5 - tex.y), 2)); // Euclidian distance from center
+		return vec4(0.0, 0.0, mix(sin(distCenter * freq * amp * 125), customNoise(tex * freq * amp, int(110 * freq * amp)), 0.5), 1.0);
+	}
+
+	// "Speaker" visualization with noise mixed in on all color channels
+	vec4 colorfulRadialNoise(vec2 tex, float freq, float amp) {
+		float distCenter = sqrt(pow((0.5 - tex.x), 2) + pow((0.5 - tex.y), 2)); // Euclidian distance from center
+		return vec4(mix(sin(distCenter * freq * amp * 100), customNoise(tex * freq * amp, int(90 * freq * amp)), 0.3), mix(sin(distCenter * freq * amp * 110), customNoise(tex * freq * amp, int(115 * freq * amp)), 0.7), mix(sin(distCenter * freq * amp * 125), customNoise(tex * freq * amp, int(110 * freq * amp)), 0.5), 1.0);
+	}
+
     void main() {
         // Define normalized coordinates (not really texture coordinates) 
         // From (0,0) in bottom left corner and (1, 1) in top right corner
@@ -86,6 +104,8 @@ FRAGMENT_SHADER = """
         // gl_FragColor = vec4(customNoise(tex, 100), customNoise(tex, 150), customNoise(tex, 200), 1.0f); // Pure noise
 		// gl_FragColor = vec4(customNoise(tex * amp, 100), customNoise(tex * amp, 110), customNoise(tex * amp, 120), 1.0f); // Pure noise weighted with amplitude
 		// gl_FragColor = vec4(customNoise(tex * freq, 100), customNoise(tex * freq, 110), customNoise(tex * freq, 120), 1.0f); // Pure noise weighted with frequency
-		gl_FragColor = vec4(sin(tex.x * tex.y * freq * amp * 100), sin(tex.x * tex.y * freq * amp * 120), sin(tex.x * tex.y * freq * amp * 140), 1.0f);
+		// gl_FragColor = vec4(sin(tex.x * tex.y * freq * amp * 100), sin(tex.x * tex.y * freq * amp * 120), sin(tex.x * tex.y * freq * amp * 140), 1.0f); // Simple sine wave in each color channel
+		gl_FragColor = colorfulRadialNoise(tex, freq, amp);
+
     }
 """

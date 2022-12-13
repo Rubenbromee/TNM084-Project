@@ -5,6 +5,7 @@ import numpy as np
 import vert
 import frag
 from audio import load, play
+import time
  
 VERTEX_SHADER = vert.VERTEX_SHADER
 FRAGMENT_SHADER = frag.FRAGMENT_SHADER
@@ -93,6 +94,7 @@ def updateData(_):
     if firstUpdate:
         i_t = glutGet(GLUT_ELAPSED_TIME)
         play("song.wav")
+        time.sleep(0.2)
         firstUpdate = False
 
     c_t = glutGet(GLUT_ELAPSED_TIME) # Get current time
