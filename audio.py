@@ -1,7 +1,6 @@
 import librosa as lib
 import numpy as np
 from pygame import mixer
-import time
 
 def load():
 	y, sr = lib.load('song.wav')

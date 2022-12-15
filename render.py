@@ -94,7 +94,7 @@ def updateData(_):
     if firstUpdate:
         i_t = glutGet(GLUT_ELAPSED_TIME)
         play("song.wav")
-        time.sleep(0.2)
+        time.sleep(0.6)
         firstUpdate = False
 
     c_t = glutGet(GLUT_ELAPSED_TIME) # Get current time
