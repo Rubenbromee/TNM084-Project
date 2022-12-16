@@ -93,7 +93,7 @@ def updateData(_):
     # Play sound at the beginning of rendering
     if firstUpdate:
         i_t = glutGet(GLUT_ELAPSED_TIME)
-        play("song.wav")
+        play("Chicken Techno.wav")
         time.sleep(0.6)
         firstUpdate = False
 

@@ -94,10 +94,14 @@ FRAGMENT_SHADER = """
 		return vec4(mix(sin(distCenter * freq * amp * 100), customNoise(tex * freq * amp, int(90 * freq * amp)), 0.3), mix(sin(distCenter * freq * amp * 110), customNoise(tex * freq * amp, int(115 * freq * amp)), 0.7), mix(sin(distCenter * freq * amp * 125), customNoise(tex * freq * amp, int(110 * freq * amp)), 0.5), 1.0);
 	}
 
-	vec4 radialVoronoi(vec2 tex, float freq, float amp) {
+	vec4 colorfulRadial(vec2 tex, float freq, float amp) {
 		float distCenter = sqrt(pow((0.5 - tex.x), 2) + pow((0.5 - tex.y), 2)); // Euclidian distance from center
-		float vNoise = iqnoise(tex, 4.0 * freq * amp, 4.0 * freq * amp);
-		return vec4(mix(vNoise * 0.4, sin(distCenter * freq * amp * 100), 0.2), mix(vNoise * 0.3, sin(distCenter * freq * amp * 110), 0.2), mix(vNoise * 0.6, sin(distCenter * freq * amp * 125), 0.2), 1.0);
+		return vec4(sin(distCenter * freq * amp * 100), sin(distCenter * freq * amp * 110), sin(distCenter * freq * amp * 125), 1.0);
+	}
+
+	vec4 gradient(vec2 tex, float freq, float amp) {
+		vec4 color = vec4(mix(noise(tex * freq * 10.0), noise(tex * amp * 10.0), 0.5) * freq * amp * 10.0, mix(noise(tex * freq * 10.0), noise(tex * amp * 10.0), 0.5) * freq * amp * 5.0, mix(noise(tex * freq * 10.0), noise(tex * amp * 10.0), 0.5) * freq * amp * 7.5, 1.0) * 10.0;
+		return clamp(color, vec4(0.25, 0.25, 0.25, 0.75), vec4(1.0, 1.0, 1.0, 1.0));
 	}
 
     void main() {
@@ -111,7 +115,7 @@ FRAGMENT_SHADER = """
 		// gl_FragColor = vec4(customNoise(tex * amp, 100), customNoise(tex * amp, 110), customNoise(tex * amp, 120), 1.0f); // Pure noise weighted with amplitude
 		// gl_FragColor = vec4(customNoise(tex * freq, 100), customNoise(tex * freq, 110), customNoise(tex * freq, 120), 1.0f); // Pure noise weighted with frequency
 		// gl_FragColor = vec4(sin(tex.x * tex.y * freq * amp * 100), sin(tex.x * tex.y * freq * amp * 120), sin(tex.x * tex.y * freq * amp * 140), 1.0f); // Simple sine wave in each color channel
-		gl_FragColor = radialVoronoi(tex, freq, amp);
+		gl_FragColor = mix(colorfulRadial(tex, freq, amp), gradient(tex, freq, amp), vec4(0.85, 0.85, 0.85, 0.5)) * 1.5;
 
     }
 """
