@@ -17,6 +17,8 @@ a_list = None
 df_list = None
 ampLocation = None
 freqLocation = None
+timeLocation = None
+slowTimeLocation = None
 firstUpdate = True
 i_t = None
 a_list_len = None
@@ -29,6 +31,8 @@ def init():
     global df_list
     global ampLocation
     global freqLocation
+    global timeLocation
+    global slowTimeLocation
     global a_list_len
     global df_list_len
 
@@ -71,6 +75,8 @@ def init():
     a_list, df_list = load() # Load amplitude and frequency data for each time frame from sound file
     ampLocation = glGetUniformLocation(shaderProgram, 'amp') # Get shader location for the amplitude variable
     freqLocation = glGetUniformLocation(shaderProgram, 'freq') # Get shader location for the frequency variable
+    timeLocation = glGetUniformLocation(shaderProgram, 'time') # Get shader location for the time variable
+    slowTimeLocation = glGetUniformLocation(shaderProgram, 'slowTime')
     # Calculate list lengths once to reduce calculations in frame update function
     a_list_len = len(a_list) 
     df_list_len = len(df_list)
@@ -81,6 +87,7 @@ def updateData(_):
     global firstUpdate # To check for first frame update and set initial time
     global ampLocation
     global freqLocation
+    global slowTimeLocation
     global i_t # Initial time, the time it takes to set up window etc.
     global a_list_len
     global df_list_len
@@ -93,7 +100,7 @@ def updateData(_):
     # Play sound at the beginning of rendering
     if firstUpdate:
         i_t = glutGet(GLUT_ELAPSED_TIME)
-        play("Chicken Techno.wav")
+        play("song.wav")
         time.sleep(0.6)
         firstUpdate = False
 
@@ -104,13 +111,41 @@ def updateData(_):
     if t_i >= a_list_len or t_i >= df_list_len:
         return
 
-
     a = a_list[t_i] # Get amplitude for current time
     df = df_list[t_i] # Get dominating frequency for current time
 
+    # To smooth out jaggedness in samples, take average of last 5 samples
+    a_out = a
+    df_out = df
+    if t_i >= 4:
+        for i in range(0, 4):
+            a_out += a_list[t_i - i]
+            df_out += df_list[t_i - i]
+        a_out = a_out / 5
+        df_out = df_out / 5
+
+    a_f = a_out
+    a_f = a_f ** (1 / 0.001)
+    t_f = 1.0
+
+    print(a_f)
+
+    # To have a smooth rotation of the gradients in the flow noise
+    if a_f > 0.4 and a_f < 0.425:
+        t_f = 2.5
+    elif a_f > 0.425 and a_f < 0.45:
+        t_f = 5.0
+    elif a_f > 0.475 and a_f <= 1.0:
+        t_f = 7.5
+
+    slowTime = c_t * 0.001 * t_f
+
     # Update uniforms
-    glUniform1f(ampLocation, a)
-    glUniform1f(freqLocation, df)
+    glUniform1f(ampLocation, a_out)
+    glUniform1f(freqLocation, df_out)
+    glUniform1f(timeLocation, c_t)
+    glUniform1f(slowTimeLocation, slowTime)
+
 
     glutPostRedisplay() # Refresh window with new data
     glutTimerFunc(12, updateData, 0) # Loop every 12 ms
