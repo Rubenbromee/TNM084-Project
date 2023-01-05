@@ -3,7 +3,7 @@ import numpy as np
 from pygame import mixer
 
 def load():
-	y, sr = lib.load('song.wav')
+	y, sr = lib.load('kanye.wav')
 	# 256 sample window should be used to get frequency windows about 256 / 22050 Hz = 0,01161 s about 12 ms long
 	f = lib.amplitude_to_db(np.abs(lib.stft(y, hop_length=256, win_length=2048))) # Equal hop length and window length to get an even division of the buffer
 	yMax = max(y)
@@ -44,7 +44,7 @@ def handle(y, yMax, yMin, f, t):
 		currentFrame[frequencyBandNr] = 0
 	
 	avgDominatingFrequency = sum(dominatingFrequencies) / len(dominatingFrequencies)
-	gamma = 4 # Larger gamma = more contrast 
+	gamma = 1 # Larger gamma = more contrast 
 	normalizedDominatingFrequency = (np.log(avgDominatingFrequency) / np.log(maxSampledFrequency)) # To get normalized value
 	normalizedDominatingFrequency = normalizedDominatingFrequency ** (1 / gamma)  # Gamma correction to increase difference in frequencies
 

@@ -23,6 +23,10 @@ firstUpdate = True
 i_t = None
 a_list_len = None
 df_list_len = None
+a_list_min = None
+df_list_min = None
+a_list_max = None
+df_list_max = None
 
 # Intitialization, runs once at the start of the program
 def init():
@@ -35,6 +39,10 @@ def init():
     global slowTimeLocation
     global a_list_len
     global df_list_len
+    global a_list_min
+    global df_list_min
+    global a_list_max
+    global df_list_max
 
     vertexShader = shaders.compileShader(VERTEX_SHADER, GL_VERTEX_SHADER)
     fragmentShader = shaders.compileShader(FRAGMENT_SHADER, GL_FRAGMENT_SHADER)
@@ -76,10 +84,14 @@ def init():
     ampLocation = glGetUniformLocation(shaderProgram, 'amp') # Get shader location for the amplitude variable
     freqLocation = glGetUniformLocation(shaderProgram, 'freq') # Get shader location for the frequency variable
     timeLocation = glGetUniformLocation(shaderProgram, 'time') # Get shader location for the time variable
-    slowTimeLocation = glGetUniformLocation(shaderProgram, 'slowTime')
-    # Calculate list lengths once to reduce calculations in frame update function
+    slowTimeLocation = glGetUniformLocation(shaderProgram, 'slowTime') # Get shader location for the slow time variable used to rotate gradients
+    # Calculate list lengths, min and max values once to reduce calculations in frame update function
     a_list_len = len(a_list) 
     df_list_len = len(df_list)
+    a_list_min = min(a_list)
+    df_list_min = min(df_list)
+    a_list_max = max(a_list)
+    df_list_max = max(df_list)
 
     glutTimerFunc(12, updateData, 0) # Loop data update function every 12 ms
 
@@ -91,6 +103,10 @@ def updateData(_):
     global i_t # Initial time, the time it takes to set up window etc.
     global a_list_len
     global df_list_len
+    global a_list_min
+    global df_list_min
+    global a_list_max
+    global df_list_max
 
     # Don't check null lists
     if a_list == None or df_list == None:
@@ -100,8 +116,7 @@ def updateData(_):
     # Play sound at the beginning of rendering
     if firstUpdate:
         i_t = glutGet(GLUT_ELAPSED_TIME)
-        play("song.wav")
-        time.sleep(0.6)
+        play("kanye.wav")
         firstUpdate = False
 
     c_t = glutGet(GLUT_ELAPSED_TIME) # Get current time
@@ -124,28 +139,24 @@ def updateData(_):
         a_out = a_out / 5
         df_out = df_out / 5
 
-    a_f = a_out
-    a_f = a_f ** (1 / 0.001)
-    t_f = 1.0
-
-    print(a_f)
-
-    # To have a smooth rotation of the gradients in the flow noise
-    if a_f > 0.4 and a_f < 0.425:
-        t_f = 2.5
-    elif a_f > 0.425 and a_f < 0.45:
-        t_f = 5.0
-    elif a_f > 0.475 and a_f <= 1.0:
-        t_f = 7.5
-
-    slowTime = c_t * 0.001 * t_f
-
-    # Update uniforms
+    # Update freq and amp uniforms before contrast increase
     glUniform1f(ampLocation, a_out)
     glUniform1f(freqLocation, df_out)
+
+    # To increase contrast for the time factor
+    a_out = (a_out - a_list_min) / (a_list_max - a_list_min)
+    df_out = (df_out - df_list_min) / (df_list_max - df_list_min)
+
+    # Time factor, sets rotation amount for gradients in flow noise
+    t_f = 0.1
+    t_f = ((a_out * t_f) + (df_out * t_f)) / 2
+
+    # Time to use fo rotation of gradients, constant rotation with frequency and amplitude based variations
+    slowTime = c_t * 0.001 * t_f
+
+    # Update other uniforms
     glUniform1f(timeLocation, c_t)
     glUniform1f(slowTimeLocation, slowTime)
-
 
     glutPostRedisplay() # Refresh window with new data
     glutTimerFunc(12, updateData, 0) # Loop every 12 ms

@@ -63,8 +63,8 @@ FRAGMENT_SHADER = """
 	}
 
 	float Mnoise( vec2 uv ) {
-  		//return rnoise(uv);                      // base turbulence
-  		//return -1. + 2.* (1.-abs(rnoise(uv)));  // flame like
+  		// return rnoise(uv);                      // base turbulence
+  		// return -1. + 2.* (1.-abs(rnoise(uv)));  // flame like
     	return -1. + 2.* (abs(rnoise(uv)));     // cloud like
 	}
 
@@ -83,7 +83,7 @@ FRAGMENT_SHADER = """
 		float f;
 		f = turb(5.0 * tex);
 		vec4 o = vec4(0.5 + 0.5 * f);
-		o = mix(vec4(0.3, 0.3, 0.3, 1.0), vec4(1.3), o);
+		o = mix(vec4(0.3 * freq, 0.3 * amp, 0.3 * freq, 1.0), vec4(1.3), o);
 		return clamp(o, vec4(0.3, 0.3, 0.3, 1.0), vec4(1.0));
 	}
 
@@ -186,6 +186,10 @@ FRAGMENT_SHADER = """
 		return clamp(color, vec4(0.25, 0.25, 0.25, 0.75), vec4(1.0, 1.0, 1.0, 1.0));
 	}
 
+	vec4 customNoiseVec4(vec2 tex, int i, float freq, float amp) {
+		return vec4(customNoise(tex * freq, 100 - i), customNoise(tex * amp, 125 + i), customNoise(tex * freq * amp, 110 - (2 * i)), 1.0);
+	}
+
     void main() {
         // Define normalized coordinates (not really texture coordinates) 
         // From (0,0) in bottom left corner and (1, 1) in top right corner
@@ -197,8 +201,9 @@ FRAGMENT_SHADER = """
 		// gl_FragColor = vec4(customNoise(tex * amp, 100), customNoise(tex * amp, 110), customNoise(tex * amp, 120), 1.0f); // Pure noise weighted with amplitude
 		// gl_FragColor = vec4(customNoise(tex * freq, 100), customNoise(tex * freq, 110), customNoise(tex * freq, 120), 1.0f); // Pure noise weighted with frequency
 		// gl_FragColor = vec4(sin(tex.x * tex.y * freq * amp * 100), sin(tex.x * tex.y * freq * amp * 120), sin(tex.x * tex.y * freq * amp * 140), 1.0f); // Simple sine wave in each color channel
-		// gl_FragColor = mix(colorfulRadial(tex, freq, amp), flow(tex, freq, amp), vec4(0.5));
-		gl_FragColor = flow(tex, freq, amp);
+		gl_FragColor = mix(colorfulRadial(tex, freq, amp), flow(tex, freq, amp), vec4(0.5));
+		// gl_FragColor = flow(tex, freq, amp);
+		// gl_FragColor = mix(customNoiseVec4(tex, 25, freq, amp), flow(tex, freq, amp), vec4(1.3));
 
     }
 """
