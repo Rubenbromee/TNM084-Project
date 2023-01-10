@@ -112,7 +112,7 @@ def updateData(_):
     # Play sound at the beginning of rendering
     if firstUpdate:
         i_t = glutGet(GLUT_ELAPSED_TIME)
-        play("kanye.wav")
+        play("song.wav")
         firstUpdate = False
 
     c_t = glutGet(GLUT_ELAPSED_TIME) # Get current time
