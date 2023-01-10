@@ -5,7 +5,6 @@ import numpy as np
 import vert
 import frag
 from audio import load, play
-import time
  
 VERTEX_SHADER = vert.VERTEX_SHADER
 FRAGMENT_SHADER = frag.FRAGMENT_SHADER
@@ -17,8 +16,7 @@ a_list = None
 df_list = None
 ampLocation = None
 freqLocation = None
-timeLocation = None
-slowTimeLocation = None
+rotationAmountLocation = None
 firstUpdate = True
 i_t = None
 a_list_len = None
@@ -35,8 +33,7 @@ def init():
     global df_list
     global ampLocation
     global freqLocation
-    global timeLocation
-    global slowTimeLocation
+    global rotationAmountLocation
     global a_list_len
     global df_list_len
     global a_list_min
@@ -83,8 +80,7 @@ def init():
     a_list, df_list = load() # Load amplitude and frequency data for each time frame from sound file
     ampLocation = glGetUniformLocation(shaderProgram, 'amp') # Get shader location for the amplitude variable
     freqLocation = glGetUniformLocation(shaderProgram, 'freq') # Get shader location for the frequency variable
-    timeLocation = glGetUniformLocation(shaderProgram, 'time') # Get shader location for the time variable
-    slowTimeLocation = glGetUniformLocation(shaderProgram, 'slowTime') # Get shader location for the slow time variable used to rotate gradients
+    rotationAmountLocation = glGetUniformLocation(shaderProgram, 'rotationAmount') # Get shader location for the slow time variable used to rotate gradients
     # Calculate list lengths, min and max values once to reduce calculations in frame update function
     a_list_len = len(a_list) 
     df_list_len = len(df_list)
@@ -99,7 +95,7 @@ def updateData(_):
     global firstUpdate # To check for first frame update and set initial time
     global ampLocation
     global freqLocation
-    global slowTimeLocation
+    global rotationAmountLocation
     global i_t # Initial time, the time it takes to set up window etc.
     global a_list_len
     global df_list_len
@@ -151,12 +147,11 @@ def updateData(_):
     t_f = 0.1
     t_f = ((a_out * t_f) + (df_out * t_f)) / 2
 
-    # Time to use fo rotation of gradients, constant rotation with frequency and amplitude based variations
-    slowTime = c_t * 0.001 * t_f
+    # Amount to rotate the gradients in the flow noise, constant rotation based on time affected by frequency and amplitude
+    rotationAmount = c_t * 0.001 * t_f
 
     # Update other uniforms
-    glUniform1f(timeLocation, c_t)
-    glUniform1f(slowTimeLocation, slowTime)
+    glUniform1f(rotationAmountLocation, rotationAmount)
 
     glutPostRedisplay() # Refresh window with new data
     glutTimerFunc(12, updateData, 0) # Loop every 12 ms

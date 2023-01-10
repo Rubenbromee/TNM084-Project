@@ -60,7 +60,3 @@ def play(song):
 	mixer.music.load(song)
 	mixer.music.set_volume(0.5)
 	mixer.music.play()
-
-
-
-
